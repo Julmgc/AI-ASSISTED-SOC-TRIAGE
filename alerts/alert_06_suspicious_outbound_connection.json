@@ -1,0 +1,39 @@
+{
+  "alert_id": "alert_06",
+  "source": "Windows Sysmon telemetry collected in Splunk",
+  "timestamp": "2026-07-13T15:05:00-03:00",
+  "host": {
+    "hostname": "DESKTOP-HRMT55O",
+    "user": "DESKTOP-HRMT55O\\jules"
+  },
+  "event": {
+    "event_type": "Network Connection",
+    "sysmon_event_code": 3,
+    "process_name": "powershell.exe",
+    "process_path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "command_line": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -Command \"Invoke-WebRequest http://203.0.113.50/update.txt\""
+  },
+  "network": {
+    "destination_ip": "203.0.113.50",
+    "destination_port": 80,
+    "protocol": "tcp",
+    "destination_context": "External documentation IP address used for lab testing",
+    "reputation_known": false
+  },
+  "detection": {
+    "rule_name": "PowerShell outbound HTTP connection",
+    "severity": "medium",
+    "reason": "PowerShell initiated an outbound HTTP request to an external IP address."
+  },
+  "splunk_context": {
+    "index": "main",
+    "source": "WinEventLog:Microsoft-Windows-Sysmon/Operational",
+    "host": "DESKTOP-HRMT55O",
+    "search_terms": [
+      "Invoke-WebRequest",
+      "203.0.113.50",
+      "powershell.exe",
+      "EventCode=3"
+    ]
+  }
+}

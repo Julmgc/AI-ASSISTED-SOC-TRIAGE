@@ -1,0 +1,37 @@
+{
+  "alert_id": "alert_05",
+  "source": "Windows Security Event Log collected in Splunk",
+  "timestamp": "2026-07-13T14:50:00-03:00",
+  "host": {
+    "hostname": "DESKTOP-HRMT55O"
+  },
+  "event": {
+    "event_type": "User Created",
+    "windows_event_code": 4720,
+    "actor_user": "DESKTOP-HRMT55O\\jules",
+    "target_user": "lab_backup",
+    "command_line": "net user lab_backup P@ssw0rd123 /add"
+  },
+  "account_management_context": {
+    "change_ticket": "not provided",
+    "known_admin_activity": "unknown",
+    "target_account_type": "local user",
+    "added_to_admin_group": false
+  },
+  "detection": {
+    "rule_name": "New local user account created",
+    "severity": "medium",
+    "reason": "A new local user account was created on a Windows endpoint."
+  },
+  "splunk_context": {
+    "index": "main",
+    "source": "WinEventLog:Security",
+    "host": "DESKTOP-HRMT55O",
+    "search_terms": [
+      "EventCode=4720",
+      "lab_backup",
+      "new local user",
+      "net user"
+    ]
+  }
+}

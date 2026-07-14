@@ -1,0 +1,40 @@
+{
+  "alert_id": "alert_01",
+  "source": "Windows Sysmon telemetry collected in Splunk",
+  "timestamp": "2026-07-13T13:50:59.584-03:00",
+  "host": {
+    "hostname": "DESKTOP-HRMT55O",
+    "user": "DESKTOP-HRMT55O\\jules"
+  },
+  "event": {
+    "event_type": "Process Creation",
+    "sysmon_event_code": 1,
+    "process_name": "powershell.exe",
+    "process_path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "command_line": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -ExecutionPolicy Bypass -Command \"Test-NetConnection 192.168.20.45 -Port 9997\"",
+    "parent_process": "powershell.exe",
+    "parent_process_path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+  },
+  "network": {
+    "destination_ip": "192.168.20.45",
+    "destination_port": 9997,
+    "destination_context": "Internal Splunk receiving port used in the lab"
+  },
+  "detection": {
+    "rule_name": "PowerShell execution with suspicious flags",
+    "severity": "medium",
+    "reason": "PowerShell was executed with -NoProfile and ExecutionPolicy Bypass while testing network connectivity to an internal service."
+  },
+  "splunk_context": {
+    "index": "main",
+    "source": "WinEventLog:Microsoft-Windows-Sysmon/Operational",
+    "host": "DESKTOP-HRMT55O",
+    "screenshot": "splunk-sysmon-suspicious-powershell-event.png",
+    "search_terms": [
+      "ExecutionPolicy Bypass",
+      "Test-NetConnection",
+      "192.168.20.45",
+      "9997"
+    ]
+  }
+}

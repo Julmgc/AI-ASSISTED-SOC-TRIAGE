@@ -1,0 +1,34 @@
+{
+  "alert_id": "alert_08",
+  "source": "Windows Sysmon telemetry collected in Splunk",
+  "timestamp": "2026-07-13T15:35:00-03:00",
+  "host": {
+    "hostname": "DESKTOP-HRMT55O",
+    "user": "DESKTOP-HRMT55O\\jules"
+  },
+  "event": {
+    "event_type": "Process Creation",
+    "sysmon_event_code": 1,
+    "process_name": "cmd.exe",
+    "process_path": "C:\\Windows\\System32\\cmd.exe",
+    "command_line": "cmd.exe /c whoami",
+    "parent_process": "explorer.exe",
+    "parent_process_path": "C:\\Windows\\explorer.exe"
+  },
+  "detection": {
+    "rule_name": "Command shell execution observed",
+    "severity": "low",
+    "reason": "A command shell was launched and executed a basic identity check command."
+  },
+  "environment_context": {
+    "known_activity": "User was manually testing command execution visibility in Splunk.",
+    "suspicious_indicators": [],
+    "expected_result": "Likely benign or false positive"
+  },
+  "splunk_context": {
+    "index": "main",
+    "source": "WinEventLog:Microsoft-Windows-Sysmon/Operational",
+    "host": "DESKTOP-HRMT55O",
+    "search_terms": ["cmd.exe", "whoami", "EventCode=1"]
+  }
+}

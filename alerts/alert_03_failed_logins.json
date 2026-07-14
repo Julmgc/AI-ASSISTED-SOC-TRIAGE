@@ -1,0 +1,39 @@
+{
+  "alert_id": "alert_03",
+  "source": "Windows Security Event Log collected in Splunk",
+  "timestamp": "2026-07-13T14:20:00-03:00",
+  "host": {
+    "hostname": "DESKTOP-HRMT55O"
+  },
+  "event": {
+    "event_type": "Failed Login",
+    "windows_event_code": 4625,
+    "logon_type": 3,
+    "target_user": "administrator",
+    "failure_reason": "Unknown user name or bad password",
+    "failed_attempt_count": 12,
+    "time_window_minutes": 5
+  },
+  "authentication_context": {
+    "src_ip": "192.168.20.50",
+    "src_hostname": "unknown",
+    "network_zone": "internal lab network",
+    "successful_login_after_failures": false
+  },
+  "detection": {
+    "rule_name": "Multiple failed logins against privileged account",
+    "severity": "medium",
+    "reason": "Multiple failed authentication attempts targeted an administrative account within a short time window."
+  },
+  "splunk_context": {
+    "index": "main",
+    "source": "WinEventLog:Security",
+    "host": "DESKTOP-HRMT55O",
+    "search_terms": [
+      "EventCode=4625",
+      "administrator",
+      "failed login",
+      "192.168.20.50"
+    ]
+  }
+}
