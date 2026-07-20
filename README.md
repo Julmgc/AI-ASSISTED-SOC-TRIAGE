@@ -1,4 +1,4 @@
-````markdown
+```markdown
 # AI-Assisted SOC Triage with Splunk, Sysmon, Python, and OpenAI
 
 This project evaluates how an LLM can assist with early-stage SOC triage.
@@ -11,22 +11,20 @@ The goal is not to replace analyst judgment. The goal is to test where AI can he
 
 The workflow follows a realistic SOC triage process:
 
-```text
 Windows telemetry / sample alerts
-        ↓
+↓
 Splunk investigation context
-        ↓
+↓
 Alert JSON files
-        ↓
+↓
 Python triage workflow
-        ↓
+↓
 OpenAI structured analysis
-        ↓
+↓
 Manual analyst validation
-        ↓
+↓
 Human vs AI comparison
 ```
-````
 
 The LLM is used as a triage assistant. It summarizes evidence, extracts observables, suggests possible MITRE ATT&CK mappings, generates triage questions, and identifies unsupported assumptions.
 
