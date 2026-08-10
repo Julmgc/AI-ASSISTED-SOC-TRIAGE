@@ -8,42 +8,53 @@
 
 ## Evidence reviewed
 
-- HTTP request data
-- Request path and query parameters
-- SQL injection-style characters or expressions
-- Source address
-- Destination web application
-- Available response or application context
+- HTTP `GET` request
+- Target host: `WEB-LAB-01`
+- Source IP: `192.168.20.60`
+- Request URI: `/products?id=1' OR '1'='1`
+- HTTP status code: `400`
+- Request marked as blocked
+- No evidence of successful exploitation
+- Lab web application context
 
-## Analyst reasoning
+## Manual reasoning
 
-The request contains syntax commonly associated with SQL injection testing or exploitation.
+The request contains the SQL injection-style expression:
 
-Examples may include SQL operators, quotation marks, comments, boolean conditions, or encoded payload fragments. This makes the request suspicious, but the request alone does not demonstrate that the application was vulnerable or that the attempted injection succeeded.
+```text
+/products?id=1' OR '1'='1
+```
 
-The activity may represent malicious probing, an automated vulnerability scanner, security testing, or malformed benign input. Confirmation requires application logs, database activity, server responses, and authorization context.
+The payload is consistent with an attempt to manipulate a SQL query through a web parameter, which makes the activity suspicious.
+
+However, the request returned HTTP `400`, was marked as blocked, and the available evidence does not show that the payload was successfully processed by the application or database.
+
+The activity could represent unauthorized probing, automated scanning, authorized security testing, or other lab activity. Additional context about the source and surrounding web requests would be needed to determine its purpose.
 
 ## MITRE ATT&CK assessment
 
 - **Possible technique:** T1190 — Exploit Public-Facing Application
 - **Mapping confidence:** medium
 
-This mapping is appropriate if the request represents an attempt to exploit a web application. It should not be treated as a confirmed exploitation event without evidence that the application processed the payload successfully.
+The mapping is reasonable because the request contains an injection-style payload targeting a web application.
+
+However, the evidence supports an attempted interaction with the application rather than confirmed exploitation. There is no evidence of successful database access, code execution, or data exposure.
 
 ## Recommended next steps
 
-- Review the complete request and decoded parameters.
-- Check the HTTP response status and response body.
-- Identify whether the source was an authorized scanner.
+- Identify the system or user associated with `192.168.20.60`.
+- Confirm whether the source was performing authorized lab or security testing.
 - Search for additional requests from the same source.
-- Review web application and database logs.
-- Check for database errors or unexpected queries.
-- Verify whether the targeted parameter is properly sanitized.
-- Block the source if the activity is confirmed as unauthorized and malicious.
+- Check whether similar payloads received successful HTTP responses.
+- Review application logs for errors or unusual behavior around the event.
+- Review available database logs for related activity.
+- Verify that the blocking control behaved as expected.
 
 ## Final assessment
 
-The request is consistent with an SQL injection attempt and should be investigated. The evidence supports suspicious web activity but does not confirm successful exploitation.
+The request is suspicious because it contains a recognizable SQL injection-style payload.
+
+The available evidence shows that the request was blocked and does not confirm successful exploitation.
 
 - **Final classification:** suspicious
 - **Final risk level:** medium

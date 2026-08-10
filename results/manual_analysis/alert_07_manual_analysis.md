@@ -2,52 +2,61 @@
 
 ## Manual classification
 
-- **Classification:** suspicious
-- **Risk level:** high
-- **Confidence:** medium to high
+- **Classification:** needs_review
+- **Risk level:** medium
+- **Confidence:** medium
 
 ## Evidence reviewed
 
+- Sysmon Event ID `1`
 - PowerShell process execution
-- Encoded or obfuscated command-line content
-- PowerShell command-line flags
-- Parent process
-- User and host context
-- Available Sysmon process telemetry
+- Parent process: `cmd.exe`
+- User: `DESKTOP-HRMT55O\jules`
+- Command-line flags:
+  - `-NoProfile`
+  - `-ExecutionPolicy Bypass`
+  - `-EncodedCommand`
+- Encoded command value
+- No decoded payload provided
+- No execution result provided
 
-## Analyst reasoning
+## Manual reasoning
 
-The alert shows PowerShell executing an encoded or obfuscated command.
+The event shows PowerShell launched from `cmd.exe` with both `-ExecutionPolicy Bypass` and `-EncodedCommand`.
 
-Encoded PowerShell is security-relevant because attackers frequently use encoding to conceal command content, bypass simple detections, or make analysis more difficult. However, encoding can also be used by legitimate scripts, deployment tools, and administrative automation.
+The use of an encoded PowerShell command is security-relevant because encoding can obscure the underlying command content. However, encoded commands can also appear in legitimate automation, administrative scripts, installers, and controlled lab activity.
 
-The presence of an encoded command materially increases the risk compared with ordinary PowerShell execution. The payload should be decoded and reviewed before a final determination is made.
+The available evidence does not include the decoded payload or the result of the execution. Because of that, it is not possible to determine whether the command performed a malicious action.
 
-Without decoding the content, it is not possible to determine precisely what actions were attempted or whether the execution resulted in compromise.
+There is also no evidence in the alert of persistence, credential access, lateral movement, malware execution, or data exfiltration.
+
+The event therefore requires additional context and payload review before it can be classified as benign or malicious.
 
 ## MITRE ATT&CK assessment
 
 - **Technique:** T1059.001 — Command and Scripting Interpreter: PowerShell
-- **Possible technique:** T1027 — Obfuscated Files or Information
-- **Mapping confidence:** high for PowerShell
-- **Mapping confidence:** medium to high for obfuscation
+- **Mapping confidence:** high
 
-The PowerShell mapping is directly supported by the process telemetry. The obfuscation mapping is supported if the command uses encoding to conceal its content.
+The PowerShell mapping is directly supported by the process telemetry.
+
+- **Possible technique:** T1027 — Obfuscated Files or Information
+- **Mapping confidence:** medium
+
+The use of `-EncodedCommand` supports an obfuscation-related mapping, but the decoded content is not available in the evidence. The mapping should therefore remain tentative.
 
 ## Recommended next steps
 
 - Preserve the original encoded command.
-- Decode the payload in a safe analysis environment.
-- Review the decoded content for downloads, persistence, credential access, or execution.
-- Identify the parent process and initiating user.
-- Check whether the command was part of an approved script or deployment.
-- Review child processes and network connections.
-- Search for the same encoded command across other hosts.
-- Isolate the endpoint if the decoded payload is malicious.
+- Decode and review the payload in a safe analysis workflow.
+- Review the parent process and surrounding process tree.
+- Check for child processes, file creation, registry changes, or network connections associated with the PowerShell process.
+- Review available PowerShell logs for additional command or script content.
+- Confirm whether the activity was expected in the lab.
+- Escalate only if the decoded payload or follow-on telemetry shows malicious behavior.
 
 ## Final assessment
 
-Encoded PowerShell activity is strongly suspicious and warrants immediate investigation. A final malicious classification depends on the decoded command and surrounding telemetry.
+The combination of `-ExecutionPolicy Bypass` and `-EncodedCommand` makes the event security-relevant, but the available evidence does not establish malicious execution.
 
-- **Final classification:** suspicious
-- **Final risk level:** high
+- **Final classification:** needs_review
+- **Final risk level:** medium

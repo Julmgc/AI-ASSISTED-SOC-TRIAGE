@@ -8,46 +8,51 @@
 
 ## Evidence reviewed
 
-- Windows Security Event ID 4720
+- Windows Security Event ID `4720`
 - Actor account: `DESKTOP-HRMT55O\jules`
 - Target account: `lab_backup`
-- Sysmon Event ID 1 process telemetry
+- Sysmon Event ID `1`
 - Process images: `net.exe` and `net1.exe`
 - Parent process: `powershell.exe`
-- Command line used to add the local account
+- Command line used to create the local account
+- Account not reported as added to the local Administrators group
+- No change ticket or known administrative context provided
 
-## Analyst reasoning
+## Manual reasoning
 
-A new local user account named `lab_backup` was created on the Windows endpoint.
+Windows Security Event ID `4720` confirms that a new local account named `lab_backup` was created on the endpoint.
 
-Windows Security Event ID 4720 confirms that the account-creation action occurred. Sysmon Event ID 1 provides additional process context, showing PowerShell launching `net.exe`, which then invoked `net1.exe` with the command used to add the account.
+Sysmon Event ID `1` adds process context, showing PowerShell launching `net.exe`, which then invoked `net1.exe` with the command used to create the account.
 
-Local account creation can be legitimate administrative activity. It can also be associated with persistence when an account is created without authorization.
+Local account creation can be legitimate administrative activity, but it can also be associated with persistence when performed without authorization.
 
-The available evidence confirms the activity but does not establish whether it was approved. There is no evidence in the alert that the account was added to the local Administrators group. There is also no evidence of subsequent login activity, malware execution, credential theft, lateral movement, or data exfiltration.
+The available evidence confirms the account-creation action but does not establish whether it was expected or approved. The account was not reported as added to the local Administrators group, and there is no evidence of subsequent login activity, malware execution, credential access, lateral movement, or data exfiltration.
 
-Because authorization cannot be determined from the available telemetry, the event requires analyst review.
+Because the authorization context is missing, the evidence supports a `needs_review` classification rather than a benign or malicious conclusion.
 
 ## MITRE ATT&CK assessment
 
 - **Technique:** T1136.001 — Create Account: Local Account
 - **Mapping confidence:** high
 
-The mapping is supported because the telemetry confirms the creation of a local Windows account. The mapping describes the observed behavior but does not by itself establish malicious intent.
+The mapping is directly supported by the observed creation of a local Windows account.
+
+The ATT&CK mapping describes the behavior that occurred, but it does not establish whether the action was malicious.
 
 ## Recommended next steps
 
-- Confirm whether the account creation was authorized.
-- Check for a related change ticket or administrative request.
-- Review the account’s local group membership.
-- Determine whether the account was later enabled, modified, or deleted.
-- Search for successful logins using `lab_backup`.
-- Review subsequent processes and network activity associated with the account.
-- Disable or remove the account if it was created without authorization.
+- Confirm whether the creation of `lab_backup` was authorized.
+- Check for an approved change record, administrative request, or lab instruction.
+- Review the account's local group memberships.
+- Search for subsequent logons using `lab_backup`.
+- Review nearby account-management events for additional changes.
+- Determine whether the account was later modified, enabled, disabled, or deleted.
+- Review surrounding process activity for additional context.
+- If the account was not authorized, disable or remove it according to the applicable procedure.
 
 ## Final assessment
 
-The account creation is security-relevant and requires validation. The evidence confirms that the account was created, but it does not prove that the action was malicious.
+The evidence confirms that `lab_backup` was created as a local account, but it does not establish whether the action was authorized or malicious.
 
 - **Final classification:** needs_review
 - **Final risk level:** medium

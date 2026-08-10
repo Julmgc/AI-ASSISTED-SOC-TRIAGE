@@ -2,46 +2,48 @@
 
 ## Manual classification
 
-- **Classification:** benign / needs_review
+- **Classification:** benign
 - **Risk level:** low
-- **Confidence:** medium
+- **Confidence:** high
 
 ## Evidence reviewed
 
-- PowerShell process execution
-- Administrative command-line activity
+- Sysmon process creation event
+- Full PowerShell command line
+- Parent process
 - User and host context
-- Parent process information
-- Available process telemetry
+- Known lab activity involving the Splunk Universal Forwarder
 
-## Analyst reasoning
+## Manual reasoning
 
-The alert contains PowerShell activity that may resemble suspicious command execution but is also consistent with legitimate system administration.
+The event shows PowerShell executing the following command:
 
-PowerShell is commonly used for configuration, troubleshooting, automation, and maintenance. The use of PowerShell should therefore not be treated as malicious without evaluating the command itself and the surrounding context.
+```powershell
+Get-Service SplunkForwarder
+```
 
-The available evidence does not show clearly malicious content, unauthorized access, persistence, credential theft, lateral movement, or data exfiltration.
+The command only checks the status of the `SplunkForwarder` service. The provided context also states that the user was troubleshooting the Splunk Universal Forwarder in the lab.
 
-Because the alert does not include complete authorization or change-management context, the safest classification is benign activity that may still require confirmation.
+The activity is therefore consistent with the documented purpose of the command and does not show modification of the service, script execution, file download, persistence, credential access, lateral movement, or other suspicious follow-on behavior.
+
+The use of PowerShell alone is not sufficient to classify the event as suspicious.
 
 ## MITRE ATT&CK assessment
 
 - **Possible technique:** T1059.001 — Command and Scripting Interpreter: PowerShell
-- **Mapping confidence:** low to medium
+- **Mapping confidence:** medium
 
-The technique may describe the execution method, but applying an ATT&CK technique does not mean the activity was malicious. Legitimate administration can produce the same telemetry.
+The mapping describes the use of PowerShell as an execution method. In this case, the available context supports legitimate administrative activity rather than malicious behavior.
 
 ## Recommended next steps
 
-- Confirm that the command matches an approved administrative task.
-- Verify whether the user was authorized to perform the action.
-- Check for a related maintenance request or change ticket.
-- Review the full command line for hidden or unexpected operations.
-- Confirm that no suspicious child processes or network connections followed.
+- Confirm that the `SplunkForwarder` troubleshooting activity was expected.
+- Review nearby process events only if additional context is needed.
+- If the activity is confirmed, document it as benign lab or administrative activity.
 
 ## Final assessment
 
-The available evidence is more consistent with legitimate administrative activity than malicious behavior. The event may be closed as benign after authorization is confirmed.
+The command and the available context are consistent with legitimate troubleshooting of the Splunk Universal Forwarder.
 
-- **Final classification:** benign / needs_review
+- **Final classification:** benign
 - **Final risk level:** low

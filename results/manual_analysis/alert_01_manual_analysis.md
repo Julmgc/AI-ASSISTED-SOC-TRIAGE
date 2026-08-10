@@ -9,41 +9,40 @@
 ## Evidence reviewed
 
 - PowerShell process execution
-- Command-line arguments associated with the process
-- Parent process information
+- Full command line
+- Parent process
 - User and host context
-- Available Windows or Sysmon process telemetry
+- Sysmon process telemetry
+- Internal destination `192.168.20.45:9997`
 
-## Analyst reasoning
+## Manual reasoning
 
-The alert shows PowerShell executing with characteristics that may be associated with suspicious activity.
+The event shows PowerShell running with `-NoProfile` and `-ExecutionPolicy Bypass` to execute `Test-NetConnection` against the internal address `192.168.20.45` on port `9997`.
 
-PowerShell is a legitimate administrative tool, so its presence alone does not establish malicious behavior. The assessment therefore depends on the command-line arguments, the initiating user, the parent process, and whether the activity was expected in this environment.
+The use of `ExecutionPolicy Bypass` makes the command worth examining, but the observed action itself is a connectivity test to an internal Splunk receiver used in the lab.
 
-The available evidence justifies further investigation, but it does not independently confirm malware execution, credential theft, persistence, lateral movement, or data exfiltration.
-
-The event should not be classified as a confirmed compromise without additional supporting telemetry.
+The available evidence does not establish malware execution, persistence, credential access, lateral movement, or data exfiltration. Additional context would be needed to determine whether the command was expected administrative or lab activity.
 
 ## MITRE ATT&CK assessment
 
 - **Possible technique:** T1059.001 — Command and Scripting Interpreter: PowerShell
-- **Mapping confidence:** medium
+- **Mapping confidence:** high
 
-The mapping is appropriate if the evidence confirms that PowerShell was used to execute commands. However, an ATT&CK mapping describes observed behavior and does not prove malicious intent.
+The mapping is supported because PowerShell was directly observed executing a command. This describes the observed technique and does not imply malicious intent.
+
+A secondary mapping to `T1046 — Network Service Discovery` would be lower confidence because the evidence shows only a connectivity test to one known internal service.
 
 ## Recommended next steps
 
-- Review the complete PowerShell command line.
-- Identify the parent process that launched PowerShell.
-- Determine whether the user normally performs this activity.
-- Check for encoded, downloaded, or obfuscated content.
-- Review related network connections and child processes.
-- Correlate the event with other endpoint alerts.
-- Confirm whether the activity was authorized.
+- Confirm whether the user was expected to test Splunk connectivity.
+- Validate that `192.168.20.45:9997` is the intended Splunk receiver.
+- Review surrounding PowerShell and process creation events.
+- Check available network telemetry for the connection attempt.
+- Review the parent process and nearby activity for additional context.
 
 ## Final assessment
 
-The PowerShell execution is security-relevant and warrants investigation. However, the available evidence is insufficient to classify it as confirmed malicious activity.
+The event requires context because it combines PowerShell with `ExecutionPolicy Bypass`, but the command itself is consistent with an internal connectivity test.
 
 - **Final classification:** needs_review
 - **Final risk level:** medium

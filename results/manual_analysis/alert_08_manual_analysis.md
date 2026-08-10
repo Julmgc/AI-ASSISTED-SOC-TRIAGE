@@ -2,59 +2,71 @@
 
 ## Manual classification
 
-- **Classification:** benign / false_positive
+- **Classification:** benign
 - **Risk level:** low
-- **Confidence:** medium
+- **Confidence:** high
 
 ## Evidence reviewed
 
-- Alert-triggering event
-- Process, user, host, and command-line context
-- Available supporting telemetry
-- Presence or absence of correlated suspicious behavior
-- Expected administrative or application behavior
+- Sysmon Event ID `1`
+- Process: `cmd.exe`
+- Command line: `cmd.exe /c whoami`
+- Parent process: `explorer.exe`
+- User: `DESKTOP-HRMT55O\jules`
+- Host: `DESKTOP-HRMT55O`
+- Detection severity: low
+- Known lab activity: manual testing of command execution visibility in Splunk
+- No additional suspicious indicators provided
 
-## Analyst reasoning
+## Manual reasoning
 
-The alert was triggered by behavior that may superficially resemble suspicious activity, but the available evidence does not show a meaningful security threat.
+The event shows `cmd.exe` launched from `explorer.exe` to execute:
 
-The triggering condition appears too broad or lacks sufficient context. There is no supporting evidence of unauthorized access, persistence, malicious execution, credential theft, lateral movement, command-and-control activity, or data exfiltration.
+```cmd
+whoami
+```
 
-The observed behavior is more consistent with legitimate user, system, or application activity.
+The command only returns the current user context. The provided lab context states that `jules` was manually testing command execution visibility in Splunk.
 
-This alert demonstrates why detections should not rely on a single keyword, process name, destination, or isolated event without contextual validation.
+There is no evidence of unauthorized access, malware execution, persistence, credential access, lateral movement, command-and-control activity, or data exfiltration.
+
+Because both the command and the surrounding context are consistent with the documented lab activity, the event is best classified as benign.
 
 ## MITRE ATT&CK assessment
 
-- **MITRE mapping:** not sufficiently supported
-- **Mapping confidence:** low
+- **Possible technique:** T1059.003 — Windows Command Shell
+- **Mapping confidence:** medium
 
-A possible ATT&CK technique may be suggested based on superficial similarity, but the available evidence does not adequately support retaining that mapping as part of the final assessment.
+The mapping describes the use of `cmd.exe`, but in this case the execution is consistent with benign lab activity.
+
+- **Possible technique:** T1033 — System Owner/User Discovery
+- **Mapping confidence:** medium
+
+The `whoami` command retrieves the current user identity, which corresponds to user discovery behavior. However, the available context does not support malicious intent.
 
 ## Recommended next steps
 
-- Confirm that the activity matches expected system or user behavior.
-- Document the benign explanation.
-- Identify which detection condition caused the alert.
-- Add contextual exclusions only when they are specific and safe.
-- Avoid suppressing similar events globally without understanding their security value.
-- Monitor for future activity that includes stronger supporting indicators.
+- Confirm that the command was part of the documented Splunk visibility test.
+- Review nearby process events only if additional context is required.
+- If confirmed, document the event as benign lab activity.
+- Consider whether the detection should be tuned to reduce noise from known test activity.
 
 ## Detection-tuning notes
 
-Potential tuning options include:
+A detection based only on `cmd.exe` or `whoami` can generate low-value alerts because both are commonly used in legitimate administration and testing.
+
+Potential tuning could include:
 
 - requiring additional suspicious command-line indicators;
-- correlating the event with unusual parent processes;
-- requiring an untrusted destination or file path;
-- excluding a known approved process or administrative workflow;
-- increasing the threshold before generating an alert.
+- considering unusual parent-child process relationships;
+- correlating the command with other suspicious activity;
+- adding narrowly scoped exclusions for documented lab testing.
 
-Any exception should be narrowly scoped to avoid creating a detection gap.
+Any exclusion should remain specific enough to avoid suppressing meaningful command-shell activity.
 
 ## Final assessment
 
-The available evidence supports a benign explanation, and the alert should be treated as a false positive unless additional suspicious context is discovered.
+The event is consistent with documented lab testing and does not contain supporting evidence of malicious behavior.
 
-- **Final classification:** benign / false_positive
+- **Final classification:** benign
 - **Final risk level:** low
