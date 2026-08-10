@@ -1,6 +1,66 @@
 {
   "alert_file": "alerts/alert_01_suspicious_powershell.json",
   "model": "gpt-5.5",
-  "generated_at": "2026-07-13T16:04:16.598710",
-  "ai_output": "{\n  \"alert_summary\": \"A PowerShell process was created on DESKTOP-HRMT55O by user DESKTOP-HRMT55O\\\\jules using -NoProfile and -ExecutionPolicy Bypass to run Test-NetConnection against internal IP 192.168.20.45 on port 9997. The destination is described as an internal Splunk receiving port used in the lab. The flags are commonly considered suspicious, but the command itself appears to be a network connectivity test. Evidence is insufficient to determine malicious activity.\",\n  \"key_observables\": [\n    \"Host: DESKTOP-HRMT55O\",\n    \"User: DESKTOP-HRMT55O\\\\jules\",\n    \"Process: C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\n    \"Parent process: C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\n    \"Command line: powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \\\"Test-NetConnection 192.168.20.45 -Port 9997\\\"\",\n    \"Destination IP: 192.168.20.45\",\n    \"Destination port: 9997\",\n    \"Destination context: Internal Splunk receiving port used in the lab\",\n    \"Detection rule: PowerShell execution with suspicious flags\",\n    \"Sysmon event code: 1, Process Creation\"\n  ],\n  \"risk_level\": \"medium\",\n  \"classification\": \"needs_review\",\n  \"mitre_attack_mapping\": [\n    {\n      \"technique_id\": \"T1059.001\",\n      \"technique_name\": \"Command and Scripting Interpreter: PowerShell\",\n      \"reason\": \"PowerShell was executed with command-line options including -NoProfile and -ExecutionPolicy Bypass. This confirms PowerShell execution, but does not by itself prove malicious use.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"technique_id\": \"T1046\",\n      \"technique_name\": \"Network Service Discovery\",\n      \"reason\": \"Test-NetConnection was used to test connectivity to a specific internal IP and port. This could represent service discovery, but it could also be legitimate troubleshooting of the Splunk receiving port.\",\n      \"confidence\": \"low\"\n    }\n  ],\n  \"triage_questions\": [\n    \"Was user DESKTOP-HRMT55O\\\\jules expected to test connectivity to the internal Splunk receiver on 192.168.20.45:9997?\",\n    \"Is DESKTOP-HRMT55O part of the lab environment or expected to send data to this Splunk receiving port?\",\n    \"What was the parent PowerShell session doing before launching this child PowerShell process?\",\n    \"Were there other PowerShell commands executed around the same time by the same user or host?\",\n    \"Was Test-NetConnection successful, or did it fail?\",\n    \"Are there repeated connection tests or scans to multiple internal IPs or ports from this host?\",\n    \"Is use of -ExecutionPolicy Bypass normal in this environment for troubleshooting or lab exercises?\"\n  ],\n  \"recommended_next_steps\": [\n    \"Validate with the user or lab administrator whether this connectivity test was expected.\",\n    \"Review surrounding Sysmon process creation events for the same host and user to understand the parent PowerShell activity.\",\n    \"Check for additional PowerShell executions using -ExecutionPolicy Bypass on the same host.\",\n    \"Look for repeated Test-NetConnection activity or connections to multiple hosts or ports that could indicate broader discovery.\",\n    \"Confirm whether DESKTOP-HRMT55O is expected to communicate with 192.168.20.45 on port 9997.\",\n    \"If the activity is confirmed as lab or administrative troubleshooting, document as a likely false positive or expected activity.\"\n  ],\n  \"confidence\": \"medium\",\n  \"possible_false_positive_reason\": \"The command appears to test connectivity to an internal Splunk receiving port used in the lab. Use of Test-NetConnection to a known internal service can be legitimate administrative or lab troubleshooting, although -ExecutionPolicy Bypass and -NoProfile are suspicious flags that require context.\",\n  \"unsupported_assumptions_to_avoid\": [\n    \"Do not assume malware execution based only on PowerShell flags.\",\n    \"Do not assume host compromise without additional suspicious activity.\",\n    \"Do not assume persistence, lateral movement, credential theft, or data exfiltration.\",\n    \"Do not assume the network connection succeeded; the alert only shows the command was executed.\",\n    \"Do not assume attacker intent; the command may be legitimate connectivity testing.\",\n    \"Do not assume port 9997 is malicious; the alert states it is an internal Splunk receiving port used in the lab.\"\n  ]\n}"
+  "generated_at": "2026-08-10T11:04:57.462600",
+  "ai_output": {
+    "alert_summary": "A PowerShell process was created on DESKTOP-HRMT55O by user DESKTOP-HRMT55O\\jules using -NoProfile and -ExecutionPolicy Bypass to run Test-NetConnection against internal IP 192.168.20.45 on port 9997, identified in the alert as an internal Splunk receiving port used in the lab. The flags are commonly considered suspicious, but the provided command only shows a network connectivity test to an internal lab service.",
+    "key_observables": [
+      "Host: DESKTOP-HRMT55O",
+      "User: DESKTOP-HRMT55O\\jules",
+      "Event type: Sysmon Process Creation, Event ID 1",
+      "Process: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "Command line: powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"Test-NetConnection 192.168.20.45 -Port 9997\"",
+      "Parent process: powershell.exe",
+      "Destination IP: 192.168.20.45",
+      "Destination port: 9997",
+      "Destination context: Internal Splunk receiving port used in the lab",
+      "Detection rule: PowerShell execution with suspicious flags",
+      "Detection severity: medium"
+    ],
+    "risk_level": "low",
+    "classification": "needs_review",
+    "mitre_attack_mapping": [
+      {
+        "technique_id": "T1059.001",
+        "technique_name": "Command and Scripting Interpreter: PowerShell",
+        "reason": "The alert shows PowerShell being executed with command-line arguments. However, the observed command is a connectivity test and does not by itself demonstrate malicious execution.",
+        "confidence": "high"
+      },
+      {
+        "technique_id": "T1046",
+        "technique_name": "Network Service Discovery",
+        "reason": "Test-NetConnection was used to check access to a specific IP and port. This could be service discovery or a legitimate connectivity check; the alert only shows a single internal lab service test.",
+        "confidence": "low"
+      }
+    ],
+    "triage_questions": [
+      "Was DESKTOP-HRMT55O\\jules expected to perform Splunk connectivity testing at this time?",
+      "Is 192.168.20.45 confirmed to be the expected internal Splunk receiver in this lab?",
+      "Was port 9997 expected to be tested from this endpoint?",
+      "Why was -ExecutionPolicy Bypass used for this command when Test-NetConnection does not require script execution?",
+      "What launched the parent powershell.exe process, and was it an interactive user session or automation?",
+      "Were there other PowerShell commands before or after this event on the same host?",
+      "Did Sysmon or other telemetry show an actual network connection attempt or successful connection to 192.168.20.45:9997?",
+      "Are similar commands common in this lab environment or documented administrative procedures?"
+    ],
+    "recommended_next_steps": [
+      "Validate with the user or lab owner whether this was expected Splunk connectivity testing.",
+      "Review surrounding process creation events on DESKTOP-HRMT55O for the parent powershell.exe and any related PowerShell activity.",
+      "Check network telemetry or Sysmon network connection events to determine whether the connection to 192.168.20.45:9997 was attempted and whether it succeeded.",
+      "Confirm that 192.168.20.45:9997 is an authorized internal Splunk receiving endpoint.",
+      "Look for additional suspicious PowerShell indicators in the provided environment, such as encoded commands, downloaded content, unexpected scripts, or repeated bypass usage, if telemetry is available.",
+      "If confirmed as expected lab or administrative testing, document the activity and consider tuning the detection to account for known Splunk connectivity tests while still alerting on broader suspicious PowerShell usage."
+    ],
+    "confidence": "medium",
+    "possible_false_positive_reason": "The command appears to be a legitimate connectivity test to an internal Splunk receiving port in a controlled lab environment. The suspicious portion is the use of -NoProfile and -ExecutionPolicy Bypass, but the provided evidence does not show script execution, malware, persistence, credential theft, lateral movement, or exfiltration.",
+    "unsupported_assumptions_to_avoid": [
+      "Do not assume the host is compromised based only on this PowerShell command.",
+      "Do not assume malware execution occurred; no malware or payload is shown.",
+      "Do not assume credential theft occurred; no credential access behavior is provided.",
+      "Do not assume lateral movement occurred; the evidence only shows a connectivity test to one internal IP and port.",
+      "Do not assume data exfiltration occurred; the destination is described as an internal Splunk receiving port and no data transfer details are provided.",
+      "Do not assume persistence or defense evasion beyond the observed ExecutionPolicy Bypass flag.",
+      "Do not assume attacker intent; the activity could be legitimate lab or administrative testing."
+    ]
+  }
 }

@@ -1,6 +1,69 @@
 {
   "alert_file": "alerts/alert_07_encoded_powershell.json",
   "model": "gpt-5.5",
-  "generated_at": "2026-07-14T09:56:34.772170",
-  "ai_output": "{\n  \"alert_summary\": \"A PowerShell process was launched from cmd.exe on host DESKTOP-HRMT55O by user DESKTOP-HRMT55O\\\\jules with both -EncodedCommand and -ExecutionPolicy Bypass flags. The encoded payload has not been reviewed or confirmed, and no execution result or impact evidence is provided.\",\n  \"key_observables\": [\n    \"Host: DESKTOP-HRMT55O\",\n    \"User: DESKTOP-HRMT55O\\\\jules\",\n    \"Process: C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\n    \"Parent process: C:\\\\Windows\\\\System32\\\\cmd.exe\",\n    \"Command line includes: -NoProfile\",\n    \"Command line includes: -ExecutionPolicy Bypass\",\n    \"Command line includes: -EncodedCommand\",\n    \"Encoded command: SQBFAFgAIAAoACcASABlAGwAbABvACcAKQA=\",\n    \"Sysmon Event Code: 1 Process Creation\",\n    \"Detection rule: Encoded PowerShell command\",\n    \"Detection severity: high\",\n    \"Decoded payload known: false\",\n    \"Evidence of execution result: not provided\"\n  ],\n  \"risk_level\": \"medium\",\n  \"classification\": \"needs_review\",\n  \"mitre_attack_mapping\": [\n    {\n      \"technique_id\": \"T1059.001\",\n      \"technique_name\": \"Command and Scripting Interpreter: PowerShell\",\n      \"reason\": \"PowerShell was executed with command-line arguments, including an encoded command. The actual payload and result are not provided, so this mapping is based only on observed PowerShell execution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"technique_id\": \"T1027\",\n      \"technique_name\": \"Obfuscated Files or Information\",\n      \"reason\": \"The command uses -EncodedCommand, which can obscure the script content from straightforward command-line inspection. The payload has not been decoded or assessed in the provided evidence.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"technique_id\": \"T1562.001\",\n      \"technique_name\": \"Impair Defenses: Disable or Modify Tools\",\n      \"reason\": \"The command includes -ExecutionPolicy Bypass, which can be used to bypass PowerShell execution policy restrictions. However, there is no evidence that security tools were disabled or that defenses were impaired beyond this flag.\",\n      \"confidence\": \"low\"\n    }\n  ],\n  \"triage_questions\": [\n    \"What does the encoded PowerShell payload decode to?\",\n    \"Was this command expected for user DESKTOP-HRMT55O\\\\jules or part of authorized administrative, software deployment, testing, or lab activity?\",\n    \"What process or user action launched cmd.exe before it spawned powershell.exe?\",\n    \"Were there subsequent child processes, network connections, file writes, registry changes, or additional PowerShell events after this process creation?\",\n    \"Did the PowerShell process complete successfully, fail, or produce any observable output?\",\n    \"Are there related alerts for the same host, user, command line, or timestamp?\",\n    \"Is PowerShell script block logging, module logging, or PowerShell operational logging available for this timeframe?\"\n  ],\n  \"recommended_next_steps\": [\n    \"Decode and review the EncodedCommand payload in a safe analysis workflow.\",\n    \"Correlate around the timestamp 2026-07-13T15:20:00-03:00 for related Sysmon events on DESKTOP-HRMT55O, including child process creation, network connections, file creation, registry modification, and image loads if available.\",\n    \"Review the parent cmd.exe event to determine how it was launched and whether it was interactive or spawned by another process.\",\n    \"Check PowerShell logs, including script block logging if available, for the decoded script content and execution details.\",\n    \"Validate with the user or endpoint owner whether this activity was expected or authorized.\",\n    \"Search for the same encoded command or similar PowerShell flags across other hosts and users.\",\n    \"Do not conclude compromise or malware execution unless the decoded payload or follow-on telemetry supports it.\"\n  ],\n  \"confidence\": \"medium\",\n  \"possible_false_positive_reason\": \"Encoded PowerShell with ExecutionPolicy Bypass can be used by legitimate administrative scripts, software installers, endpoint management tools, training labs, or automation. Context about the user activity, decoded payload, and follow-on behavior is needed before determining intent.\",\n  \"unsupported_assumptions_to_avoid\": [\n    \"Do not assume the encoded command is malicious without decoding and reviewing it.\",\n    \"Do not assume malware was executed based only on -EncodedCommand and -ExecutionPolicy Bypass.\",\n    \"Do not assume persistence, lateral movement, credential theft, or data exfiltration; no such evidence is provided.\",\n    \"Do not assume the command succeeded; execution result is not provided.\",\n    \"Do not assume the parent cmd.exe was malicious without additional parent-process context.\",\n    \"Do not assume impact to the host or user from this single process creation event.\"\n  ]\n}"
+  "generated_at": "2026-08-10T11:07:59.706339",
+  "ai_output": {
+    "alert_summary": "Sysmon process creation telemetry shows powershell.exe launched from cmd.exe by user DESKTOP-HRMT55O\\jules with both -ExecutionPolicy Bypass and -EncodedCommand. The alert rule flagged this as high severity because encoded PowerShell commands and execution policy bypass are commonly suspicious. The decoded payload and execution result are not provided, so malicious activity cannot be confirmed from the alert alone.",
+    "key_observables": [
+      "Alert ID: alert_07",
+      "Timestamp: 2026-07-13T15:20:00-03:00",
+      "Host: DESKTOP-HRMT55O",
+      "User: DESKTOP-HRMT55O\\jules",
+      "Event type: Process Creation",
+      "Sysmon Event Code: 1",
+      "Process: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "Parent process: C:\\Windows\\System32\\cmd.exe",
+      "Command line includes: -NoProfile",
+      "Command line includes: -ExecutionPolicy Bypass",
+      "Command line includes: -EncodedCommand",
+      "EncodedCommand value: SQBFAFgAIAAoACcASABlAGwAbABvACcAKQA=",
+      "Decoded payload is not provided in the alert",
+      "Evidence of execution result is not provided"
+    ],
+    "risk_level": "medium",
+    "classification": "needs_review",
+    "mitre_attack_mapping": [
+      {
+        "technique_id": "T1059.001",
+        "technique_name": "Command and Scripting Interpreter: PowerShell",
+        "reason": "The alert shows powershell.exe being executed with command-line arguments.",
+        "confidence": "high"
+      },
+      {
+        "technique_id": "T1027",
+        "technique_name": "Obfuscated Files or Information",
+        "reason": "The PowerShell command uses -EncodedCommand, which can be used to obscure command content. The payload is not decoded or reviewed in the provided evidence, so this mapping is tentative.",
+        "confidence": "medium"
+      }
+    ],
+    "triage_questions": [
+      "Was user DESKTOP-HRMT55O\\jules expected to run PowerShell from cmd.exe at this time?",
+      "Was this activity part of approved administrative, automation, testing, or lab work?",
+      "What is the decoded content of the EncodedCommand value?",
+      "Did the PowerShell command execute successfully, fail, or produce any observable output?",
+      "What process launched cmd.exe before it spawned powershell.exe?",
+      "Were there any child processes, file writes, registry changes, or network connections from this powershell.exe instance?",
+      "Are there related PowerShell logs, such as Script Block Logging, Module Logging, or PowerShell Operational events, for the same timestamp?",
+      "Has this host or user generated similar encoded PowerShell alerts previously?"
+    ],
+    "recommended_next_steps": [
+      "Decode and review the EncodedCommand value in a safe analysis workflow.",
+      "Review the full process tree before and after cmd.exe and powershell.exe.",
+      "Search surrounding Sysmon events on DESKTOP-HRMT55O for child processes, network connections, file creation, registry modification, and image loads associated with this PowerShell process.",
+      "Check available PowerShell event logs for script block or command content around 2026-07-13T15:20:00-03:00.",
+      "Confirm with the user or lab owner whether this was expected activity.",
+      "If the decoded payload or follow-on telemetry shows harmful actions, escalate for deeper investigation.",
+      "If confirmed as authorized lab or administrative activity, document the context and consider tuning the detection to reduce expected noise."
+    ],
+    "confidence": "medium",
+    "possible_false_positive_reason": "Encoded PowerShell with ExecutionPolicy Bypass can be used by legitimate administrative scripts, automation, installers, or controlled lab tests, especially when used to avoid quoting issues or local execution policy restrictions. Additional context is required to determine whether this instance was authorized.",
+    "unsupported_assumptions_to_avoid": [
+      "Do not assume the host is compromised based only on this process creation event.",
+      "Do not assume malware was executed without decoded payload review or execution evidence.",
+      "Do not assume persistence, lateral movement, credential theft, or data exfiltration occurred.",
+      "Do not assume the command succeeded because no execution result is provided.",
+      "Do not assume attacker intent from the presence of -EncodedCommand or -ExecutionPolicy Bypass alone.",
+      "Do not assume the parent cmd.exe is malicious without additional process tree context."
+    ]
+  }
 }

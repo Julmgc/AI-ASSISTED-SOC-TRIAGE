@@ -1,6 +1,101 @@
 {
   "alert_file": "alerts/alert_06_suspicious_outbound_connection.json",
   "model": "gpt-5.5",
-  "generated_at": "2026-07-14T09:55:28.621147",
-  "ai_output": "{\n  \"alert_summary\": \"PowerShell on host DESKTOP-HRMT55O, running as DESKTOP-HRMT55O\\\\jules, initiated an outbound HTTP connection to 203.0.113.50 on TCP port 80 using Invoke-WebRequest to request /update.txt. The destination is described in the alert as an external documentation IP address used for lab testing, and reputation is unknown. Evidence is insufficient to determine whether this was benign lab activity or suspicious misuse of PowerShell.\",\n  \"key_observables\": [\n    \"Host: DESKTOP-HRMT55O\",\n    \"User: DESKTOP-HRMT55O\\\\jules\",\n    \"Process: powershell.exe\",\n    \"Process path: C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\n    \"Command line: \\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" -NoProfile -Command \\\"Invoke-WebRequest http://203.0.113.50/update.txt\\\"\",\n    \"Sysmon Event Code: 3\",\n    \"Event type: Network Connection\",\n    \"Destination IP: 203.0.113.50\",\n    \"Destination port: 80\",\n    \"Protocol: TCP\",\n    \"Destination context: External documentation IP address used for lab testing\",\n    \"Reputation known: false\",\n    \"Detection rule: PowerShell outbound HTTP connection\",\n    \"Detection severity: medium\"\n  ],\n  \"risk_level\": \"medium\",\n  \"classification\": \"needs_review\",\n  \"mitre_attack_mapping\": [\n    {\n      \"technique_id\": \"T1059.001\",\n      \"technique_name\": \"Command and Scripting Interpreter: PowerShell\",\n      \"reason\": \"The command line shows powershell.exe executing an Invoke-WebRequest command. This confirms PowerShell usage, but does not by itself prove malicious activity.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"technique_id\": \"T1105\",\n      \"technique_name\": \"Ingress Tool Transfer\",\n      \"reason\": \"Invoke-WebRequest was used to access an external HTTP URL ending in update.txt. This could represent retrieval of remote content, but the alert does not show that a file was saved, executed, or used maliciously.\",\n      \"confidence\": \"low\"\n    }\n  ],\n  \"triage_questions\": [\n    \"Was this host or user involved in authorized lab testing at the alert timestamp?\",\n    \"Is 203.0.113.50 expected in this environment for training, testing, or detection validation?\",\n    \"What was the parent process of powershell.exe?\",\n    \"Were there any related Sysmon process creation events showing who or what launched this PowerShell command?\",\n    \"Was any file written to disk as a result of the Invoke-WebRequest command?\",\n    \"Were there subsequent process executions, script executions, or command lines involving content from update.txt?\",\n    \"Has this user or host made similar PowerShell outbound HTTP requests before?\",\n    \"Are there other events around the same time involving the same destination IP, URL, host, or user?\"\n  ],\n  \"recommended_next_steps\": [\n    \"Review nearby Sysmon Event Code 1 process creation events for the PowerShell parent process and full execution context.\",\n    \"Check whether this alert aligns with documented lab testing or authorized security validation activity.\",\n    \"Search for additional network connections from DESKTOP-HRMT55O to 203.0.113.50 or other external IPs around the same time.\",\n    \"Look for file creation events or script block logs, if available, related to update.txt or the PowerShell session.\",\n    \"Confirm whether the user DESKTOP-HRMT55O\\\\jules intentionally ran this command.\",\n    \"If lab activity is confirmed, document and tune the detection if appropriate.\",\n    \"If the activity is not expected, escalate for deeper investigation of the host and user activity.\"\n  ],\n  \"confidence\": \"medium\",\n  \"possible_false_positive_reason\": \"The destination context explicitly states that 203.0.113.50 is an external documentation IP address used for lab testing. The command may have been part of authorized testing, training, or detection validation.\",\n  \"unsupported_assumptions_to_avoid\": [\n    \"Do not assume malware was downloaded.\",\n    \"Do not assume the downloaded or requested content was executed.\",\n    \"Do not assume the host is compromised.\",\n    \"Do not assume persistence, lateral movement, credential theft, or exfiltration occurred.\",\n    \"Do not assume attacker intent from the use of PowerShell alone.\",\n    \"Do not assume 203.0.113.50 is malicious because reputation is unknown.\"\n  ]\n}"
+  "generated_at": "2026-08-10T11:07:14.576740",
+  "ai_output": {
+    "alert_summary": "PowerShell on DESKTOP-HRMT55O initiated an outbound HTTP connection to 203.0.113.50:80 using Invoke-WebRequest to request /update.txt. The destination is described as an external documentation IP address used for lab testing, and no reputation information is known. The evidence shows a PowerShell-initiated web request, but does not show whether content was downloaded, saved, executed, or caused impact.",
+    "key_observables": [
+      {
+        "type": "host",
+        "value": "DESKTOP-HRMT55O"
+      },
+      {
+        "type": "user",
+        "value": "DESKTOP-HRMT55O\\jules"
+      },
+      {
+        "type": "process_name",
+        "value": "powershell.exe"
+      },
+      {
+        "type": "process_path",
+        "value": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+      },
+      {
+        "type": "command_line",
+        "value": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -Command \"Invoke-WebRequest http://203.0.113.50/update.txt\""
+      },
+      {
+        "type": "destination_ip",
+        "value": "203.0.113.50"
+      },
+      {
+        "type": "destination_port",
+        "value": "80"
+      },
+      {
+        "type": "protocol",
+        "value": "tcp"
+      },
+      {
+        "type": "url",
+        "value": "http://203.0.113.50/update.txt"
+      },
+      {
+        "type": "sysmon_event_code",
+        "value": "3"
+      },
+      {
+        "type": "detection_rule",
+        "value": "PowerShell outbound HTTP connection"
+      },
+      {
+        "type": "destination_context",
+        "value": "External documentation IP address used for lab testing"
+      }
+    ],
+    "risk_level": "medium",
+    "classification": "needs_review",
+    "mitre_attack_mapping": [
+      {
+        "technique_id": "T1059.001",
+        "technique_name": "Command and Scripting Interpreter: PowerShell",
+        "reason": "The observed command used powershell.exe with -NoProfile and Invoke-WebRequest. This confirms PowerShell usage, but does not by itself prove malicious execution.",
+        "confidence": "high"
+      },
+      {
+        "technique_id": "T1105",
+        "technique_name": "Ingress Tool Transfer",
+        "reason": "Invoke-WebRequest was used to request a remote resource named update.txt over HTTP. This could be consistent with file retrieval, but the alert does not show whether any file was saved, transferred successfully, or executed.",
+        "confidence": "low"
+      }
+    ],
+    "triage_questions": [
+      "Was user DESKTOP-HRMT55O\\jules expected to run this PowerShell command as part of lab testing or administrative activity?",
+      "What process launched powershell.exe, and was that parent process expected?",
+      "Did the web request succeed, and what HTTP status code or response size was recorded, if available?",
+      "Was update.txt written to disk, opened, executed, or referenced by any later process?",
+      "Are there other PowerShell commands around the same timestamp on DESKTOP-HRMT55O?",
+      "Is 203.0.113.50 intentionally used in this lab scenario, and was this alert generated during a planned test?",
+      "Were there subsequent network connections from the same PowerShell process or host to other destinations?",
+      "Is the use of -NoProfile normal for this user's lab or administrative workflow?"
+    ],
+    "recommended_next_steps": [
+      "Review related Sysmon process creation events for powershell.exe around 2026-07-13T15:05:00-03:00 to identify the parent process and full execution context.",
+      "Check whether the requested resource was downloaded or saved locally by reviewing file creation events and PowerShell logs, if available.",
+      "Correlate proxy, firewall, or web server logs for the connection to 203.0.113.50:80 to determine whether the request completed successfully.",
+      "Confirm with the lab owner or user whether this was expected lab testing activity involving 203.0.113.50 and update.txt.",
+      "Look for follow-on activity on DESKTOP-HRMT55O after the request, such as new processes, additional network connections, or script execution.",
+      "If the activity is confirmed as planned lab testing, document the context and consider tuning the detection to reduce expected lab noise."
+    ],
+    "confidence": "medium",
+    "possible_false_positive_reason": "The destination is explicitly described as an external documentation IP address used for lab testing, and Invoke-WebRequest may be used legitimately for testing, administration, or scripted retrieval of benign content.",
+    "unsupported_assumptions_to_avoid": [
+      "Do not assume the host is compromised based only on this PowerShell web request.",
+      "Do not assume malware was downloaded or executed; the alert does not show file write or execution evidence.",
+      "Do not assume credential theft, persistence, lateral movement, or exfiltration; none are evidenced.",
+      "Do not assume 203.0.113.50 is malicious; reputation is listed as unknown and the destination context indicates lab testing.",
+      "Do not assume attacker intent from the filename update.txt or the use of -NoProfile alone."
+    ]
+  }
 }

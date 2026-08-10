@@ -38,7 +38,9 @@ def run_triage(alert_path: Path) -> dict:
     model = os.getenv("OPENAI_MODEL", "gpt-5.5")
 
     if not api_key:
-        raise EnvironmentError("OPENAI_API_KEY is missing. Add it to your .env file.")
+        raise EnvironmentError(
+            "OPENAI_API_KEY is missing. Add it to your .env file."
+        )
 
     client = OpenAI(api_key=api_key)
 
@@ -53,11 +55,18 @@ def run_triage(alert_path: Path) -> dict:
 
     output_text = response.output_text
 
+    try:
+        ai_output = json.loads(output_text)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            "The model response was not valid JSON."
+        ) from exc
+
     result = {
         "alert_file": str(alert_path),
         "model": model,
         "generated_at": datetime.now().isoformat(),
-        "ai_output": output_text,
+        "ai_output": ai_output,
     }
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -66,14 +75,18 @@ def run_triage(alert_path: Path) -> dict:
     output_path = OUTPUT_DIR / f"{alert_id}_ai_triage.json"
 
     with output_path.open("w", encoding="utf-8") as file:
-        json.dump(result, file, indent=2)
+        json.dump(
+            result,
+            file,
+            indent=2,
+            ensure_ascii=False,
+        )
 
     print(f"[+] AI triage saved to: {output_path}")
     print()
-    print(output_text)
+    print(json.dumps(ai_output, indent=2, ensure_ascii=False))
 
     return result
-
 
 def main():
     parser = argparse.ArgumentParser(
