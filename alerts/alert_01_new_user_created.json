@@ -1,5 +1,5 @@
 {
-  "alert_id": "alert_05",
+  "alert_id": "alert_01",
   "source": "Windows Security Event Log collected in Splunk",
   "timestamp": "2026-07-13T14:50:00-03:00",
   "host": {

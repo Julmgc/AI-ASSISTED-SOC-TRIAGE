@@ -1,56 +1,72 @@
-# Alert 03 — Failed Login Burst
+# Alert 03 — Noisy False Positive
 
 ## Manual classification
 
-- **Classification:** suspicious
-- **Risk level:** medium
-- **Confidence:** medium
+- **Classification:** benign
+- **Risk level:** low
+- **Confidence:** high
 
 ## Evidence reviewed
 
-- Windows Security Event ID `4625`
-- 12 failed authentication attempts within 5 minutes
-- Target account: `administrator`
-- Source IP: `192.168.20.50`
-- Logon Type `3` (network logon)
-- Internal lab network context
-- No successful login reported after the failures
+- Sysmon Event ID `1`
+- Process: `cmd.exe`
+- Command line: `cmd.exe /c whoami`
+- Parent process: `explorer.exe`
+- User: `DESKTOP-HRMT55O\jules`
+- Host: `DESKTOP-HRMT55O`
+- Detection severity: low
+- Known lab activity: manual testing of command execution visibility in Splunk
+- No additional suspicious indicators provided
 
 ## Manual reasoning
 
-The alert shows 12 failed network logon attempts against the `administrator` account within a five-minute window, all originating from `192.168.20.50`.
+The event shows `cmd.exe` launched from `explorer.exe` to execute:
 
-The frequency of the failures and the use of a privileged account make the activity suspicious. Possible explanations include password guessing, incorrect credentials, a misconfigured service or script, or authorized testing in the lab.
+```cmd
+whoami
+```
 
-The available evidence does not show that authentication succeeded or that the account was compromised. Additional context about the source host and surrounding authentication activity would be needed to determine the cause.
+The command only returns the current user context. The provided lab context states that `jules` was manually testing command execution visibility in Splunk.
 
-A successful login from the same source following the failures would materially change the assessment because it could indicate that the authentication attempts eventually succeeded.
+There is no evidence of unauthorized access, malware execution, persistence, credential access, lateral movement, command-and-control activity, or data exfiltration.
+
+Because both the command and the surrounding context are consistent with the documented lab activity, the event is best classified as benign.
 
 ## MITRE ATT&CK assessment
 
-- **Possible technique:** T1110 — Brute Force
-- **Possible sub-technique:** T1110.001 — Password Guessing
+- **Possible technique:** T1059.003 — Windows Command Shell
 - **Mapping confidence:** medium
 
-The repeated failures against the same privileged account are consistent with password-guessing behavior.
+The mapping describes the use of `cmd.exe`, but in this case the execution is consistent with benign lab activity.
 
-However, the evidence does not establish intent, and the source is an internal lab address whose role is not identified. The mapping therefore remains provisional.
+- **Possible technique:** T1033 — System Owner/User Discovery
+- **Mapping confidence:** medium
+
+The `whoami` command retrieves the current user identity, which corresponds to user discovery behavior. However, the available context does not support malicious intent.
 
 ## Recommended next steps
 
-- Identify the host or user associated with `192.168.20.50`.
-- Confirm whether that source is expected to authenticate to `DESKTOP-HRMT55O`.
-- Search for additional Event ID `4625` activity from the same source.
-- Check for successful logons before or after the failed attempts.
-- Review account lockout events involving the `administrator` account.
-- Determine whether the activity was part of authorized lab testing or administrative troubleshooting.
-- Review nearby authentication and remote-access events on the target host.
+- Confirm that the command was part of the documented Splunk visibility test.
+- Review nearby process events only if additional context is required.
+- If confirmed, document the event as benign lab activity.
+- Consider whether the detection should be tuned to reduce noise from known test activity.
+
+## Detection-tuning notes
+
+A detection based only on `cmd.exe` or `whoami` can generate low-value alerts because both are commonly used in legitimate administration and testing.
+
+Potential tuning could include:
+
+- requiring additional suspicious command-line indicators;
+- considering unusual parent-child process relationships;
+- correlating the command with other suspicious activity;
+- adding narrowly scoped exclusions for documented lab testing.
+
+Any exclusion should remain specific enough to avoid suppressing meaningful command-shell activity.
 
 ## Final assessment
 
-The repeated failed logons against the `administrator` account are suspicious and consistent with possible password-guessing activity.
+The event is consistent with documented lab testing and does not contain supporting evidence of malicious behavior.
 
-The evidence does not show successful authentication or account compromise.
-
-- **Final classification:** suspicious
-- **Final risk level:** medium
+- **Final classification:** benign
+- **Final risk level:** low

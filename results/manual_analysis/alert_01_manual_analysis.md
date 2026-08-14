@@ -1,48 +1,58 @@
-# Alert 01 — Suspicious PowerShell Execution
+# Alert 01 — New Local User Created
 
 ## Manual classification
 
 - **Classification:** needs_review
 - **Risk level:** medium
-- **Confidence:** medium
+- **Confidence:** high
 
 ## Evidence reviewed
 
-- PowerShell process execution
-- Full command line
-- Parent process
-- User and host context
-- Sysmon process telemetry
-- Internal destination `192.168.20.45:9997`
+- Windows Security Event ID `4720`
+- Actor account: `DESKTOP-HRMT55O\jules`
+- Target account: `lab_backup`
+- Sysmon Event ID `1`
+- Process images: `net.exe` and `net1.exe`
+- Parent process: `powershell.exe`
+- Command line used to create the local account
+- Account not reported as added to the local Administrators group
+- No change ticket or known administrative context provided
 
 ## Manual reasoning
 
-The event shows PowerShell running with `-NoProfile` and `-ExecutionPolicy Bypass` to execute `Test-NetConnection` against the internal address `192.168.20.45` on port `9997`.
+Windows Security Event ID `4720` confirms that a new local account named `lab_backup` was created on the endpoint.
 
-The use of `ExecutionPolicy Bypass` makes the command worth examining, but the observed action itself is a connectivity test to an internal Splunk receiver used in the lab.
+Sysmon Event ID `1` adds process context, showing PowerShell launching `net.exe`, which then invoked `net1.exe` with the command used to create the account.
 
-The available evidence does not establish malware execution, persistence, credential access, lateral movement, or data exfiltration. Additional context would be needed to determine whether the command was expected administrative or lab activity.
+Local account creation can be legitimate administrative activity, but it can also be associated with persistence when performed without authorization.
+
+The available evidence confirms the account-creation action but does not establish whether it was expected or approved. The account was not reported as added to the local Administrators group, and there is no evidence of subsequent login activity, malware execution, credential access, lateral movement, or data exfiltration.
+
+Because the authorization context is missing, the evidence supports a `needs_review` classification rather than a benign or malicious conclusion.
 
 ## MITRE ATT&CK assessment
 
-- **Possible technique:** T1059.001 — Command and Scripting Interpreter: PowerShell
+- **Technique:** T1136.001 — Create Account: Local Account
 - **Mapping confidence:** high
 
-The mapping is supported because PowerShell was directly observed executing a command. This describes the observed technique and does not imply malicious intent.
+The mapping is directly supported by the observed creation of a local Windows account.
 
-A secondary mapping to `T1046 — Network Service Discovery` would be lower confidence because the evidence shows only a connectivity test to one known internal service.
+The ATT&CK mapping describes the behavior that occurred, but it does not establish whether the action was malicious.
 
 ## Recommended next steps
 
-- Confirm whether the user was expected to test Splunk connectivity.
-- Validate that `192.168.20.45:9997` is the intended Splunk receiver.
-- Review surrounding PowerShell and process creation events.
-- Check available network telemetry for the connection attempt.
-- Review the parent process and nearby activity for additional context.
+- Confirm whether the creation of `lab_backup` was authorized.
+- Check for an approved change record, administrative request, or lab instruction.
+- Review the account's local group memberships.
+- Search for subsequent logons using `lab_backup`.
+- Review nearby account-management events for additional changes.
+- Determine whether the account was later modified, enabled, disabled, or deleted.
+- Review surrounding process activity for additional context.
+- If the account was not authorized, disable or remove it according to the applicable procedure.
 
 ## Final assessment
 
-The event requires context because it combines PowerShell with `ExecutionPolicy Bypass`, but the command itself is consistent with an internal connectivity test.
+The evidence confirms that `lab_backup` was created as a local account, but it does not establish whether the action was authorized or malicious.
 
 - **Final classification:** needs_review
 - **Final risk level:** medium

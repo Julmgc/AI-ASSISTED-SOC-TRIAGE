@@ -1,73 +1,71 @@
-```markdown
+````markdown
 # AI-Assisted SOC Triage with Splunk, Sysmon, Python, and OpenAI
 
-This project evaluates how an LLM can assist with early-stage SOC triage.
+This project evaluates how an LLM can support initial security alert triage.
 
-The lab uses **Splunk**, **Sysmon**, **Windows Event Logs**, **Python**, and the **OpenAI API** to process SOC-style alerts, generate structured triage analysis, suggest MITRE ATT&CK mappings, and compare AI output against manual analyst validation.
+The lab uses **Splunk**, **Sysmon**, **Windows Event Logs**, **Python**, and the **OpenAI API** to process three representative alert scenarios, generate structured assessments, suggest MITRE ATT&CK mappings, and compare the LLM output with a manual review.
 
-The goal is not to replace analyst judgment. The goal is to test where AI can help analysts move faster while still avoiding unsupported conclusions.
+The goal is to evaluate where an LLM can help structure alert analysis while keeping conclusions limited to the available evidence.
 
 ## Project Overview
 
-The workflow follows a realistic SOC triage process:
+The lab follows this workflow:
 
-Windows telemetry / sample alerts
-↓
-Splunk investigation context
-↓
-Alert JSON files
-↓
-Python triage workflow
-↓
-OpenAI structured analysis
-↓
-Manual analyst validation
-↓
-Human vs AI comparison
+```text
+Windows telemetry
+        ↓
+Splunk investigation
+        ↓
+Structured alert JSON
+        ↓
+Python workflow
+        ↓
+OpenAI structured assessment
+        ↓
+Manual review
+        ↓
+AI vs. manual comparison
 ```
 
-The LLM is used as a triage assistant. It summarizes evidence, extracts observables, suggests possible MITRE ATT&CK mappings, generates triage questions, and identifies unsupported assumptions.
+The LLM is used to:
 
-The final classification remains with the analyst.
+- summarize available evidence;
+- extract relevant observables;
+- suggest MITRE ATT&CK mappings;
+- identify missing context;
+- generate triage questions;
+- provide a structured classification and risk level.
+
+The LLM output is then compared with a manual assessment based on the same evidence.
 
 ## Tools Used
 
-- **Splunk Enterprise** — SIEM and investigation layer
+- **Splunk Enterprise** — SIEM and event investigation
 - **Splunk Universal Forwarder** — Windows log forwarding
 - **Sysmon** — endpoint telemetry
 - **Windows Security Event Logs** — authentication and account-management events
 - **Python** — alert parsing and API workflow
-- **OpenAI API** — structured LLM triage output
-- **MITRE ATT&CK** — technique mapping and analyst validation
+- **OpenAI API** — structured LLM assessment
+- **MITRE ATT&CK** — technique mapping
 
 ## Alert Dataset
 
-The project includes eight SOC-style alerts:
+The project contains three representative alert scenarios:
 
-| Alert    | Scenario                         | Purpose                                                                                     |
-| -------- | -------------------------------- | ------------------------------------------------------------------------------------------- |
-| Alert 01 | Suspicious PowerShell execution  | Test whether the model identifies suspicious command-line flags without assuming compromise |
-| Alert 02 | Benign administrative PowerShell | Test whether the model overclassifies normal admin activity                                 |
-| Alert 03 | Failed login burst               | Test authentication and brute-force triage reasoning                                        |
-| Alert 04 | SQL injection-style web request  | Test web attack interpretation                                                              |
-| Alert 05 | New local user created           | Test account-management and persistence reasoning                                           |
-| Alert 06 | Suspicious outbound connection   | Test process and network context analysis                                                   |
-| Alert 07 | Encoded PowerShell command       | Test higher-risk endpoint behavior                                                          |
-| Alert 08 | Noisy false positive             | Test whether the model can acknowledge weak evidence                                        |
+| Alert        | Scenario                        | Purpose                                                                                             |
+| ------------ | ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Alert 01** | New local user created          | Test account-creation reasoning when authorization context is missing                               |
+| **Alert 02** | Suspicious PowerShell execution | Test whether the model recognizes relevant command-line characteristics without assuming compromise |
+| **Alert 03** | Noisy false positive            | Test whether the model avoids treating weak evidence as malicious activity                          |
 
 ## Repository Structure
 
 ```text
 ai-assisted-soc-triage/
 ├── alerts/
-│   ├── alert_01_suspicious_powershell.json
-│   ├── alert_02_admin_powershell_benign.json
-│   ├── alert_03_failed_logins.json
-│   ├── alert_04_sqli_web_attack.json
-│   ├── alert_05_new_user_created.json
-│   ├── alert_06_suspicious_outbound_connection.json
-│   ├── alert_07_encoded_powershell.json
-│   └── alert_08_false_positive.json
+│   ├── alert_01_new_user_created.json
+│   ├── alert_02_suspicious_powershell.json
+│   └── alert_03_false_positive.json
 │
 ├── prompts/
 │   └── triage_prompt_v1.md
@@ -86,11 +84,11 @@ ai-assisted-soc-triage/
 
 ## Example Alert
 
-Example: Alert 05 — New local user created.
+Alert 01 represents the creation of a new local Windows account.
 
 ```json
 {
-  "alert_id": "alert_05",
+  "alert_id": "alert_01",
   "source": "Windows Security Event Log collected in Splunk",
   "event": {
     "event_type": "User Created",
@@ -106,25 +104,25 @@ Example: Alert 05 — New local user created.
 }
 ```
 
-This alert tests whether the LLM can identify possible persistence behavior without assuming compromise when authorization context is missing.
+This scenario tests whether the LLM can identify the security relevance of local account creation without assuming compromise when authorization context is unavailable.
 
 ## How It Works
 
-The Python script:
+The Python workflow:
 
-1. Loads an alert JSON file.
-2. Inserts the alert context into a structured SOC triage prompt.
-3. Sends the prompt to the OpenAI API.
-4. Saves the AI-generated triage output.
-5. Allows comparison against manual analyst notes.
+1. loads an alert JSON file;
+2. inserts the available evidence into a structured triage prompt;
+3. sends the prompt to the OpenAI API;
+4. saves the structured LLM output;
+5. compares the result with a manual assessment.
 
-Example command:
+Example:
 
 ```bash
-python main.py --alert alerts/alert_05_new_user_created.json
+python main.py --alert alerts/alert_01_new_user_created.json
 ```
 
-Output is saved to:
+AI output is saved under:
 
 ```text
 results/ai_outputs/
@@ -158,133 +156,148 @@ Create a `.env` file:
 cp .env.example .env
 ```
 
-Add your OpenAI API key:
+Add your OpenAI API configuration:
 
 ```env
 OPENAI_API_KEY=your_api_key_here
 OPENAI_MODEL=gpt-5.5
 ```
 
-Do not commit `.env` to GitHub.
+Do not commit `.env` or API credentials to GitHub.
 
 ## Usage
 
-Run triage for one alert:
+Run Alert 01:
 
 ```bash
-python main.py --alert alerts/alert_01_suspicious_powershell.json
+python main.py --alert alerts/alert_01_new_user_created.json
 ```
 
-Run another alert:
+Run Alert 02:
 
 ```bash
-python main.py --alert alerts/alert_05_new_user_created.json
+python main.py --alert alerts/alert_02_suspicious_powershell.json
 ```
 
-Validate JSON files before running:
+Run Alert 03:
 
 ```bash
-python3 -m json.tool alerts/alert_05_new_user_created.json > /dev/null
+python main.py --alert alerts/alert_03_false_positive.json
 ```
 
-## Example AI Output
+Validate an alert JSON file before running it:
 
-For the new local user alert, the LLM should identify:
+```bash
+python3 -m json.tool alerts/alert_01_new_user_created.json > /dev/null
+```
+
+## Alert 01 — New Local User Created
+
+The scenario uses Windows Security Event ID `4720` and Sysmon process creation telemetry related to the creation of the `lab_backup` account.
+
+The LLM assessment included:
 
 ```text
+Classification: needs_review
 Risk level: medium
-Classification: suspicious or needs_review
-Possible MITRE mapping: T1136.001 — Create Account: Local Account
+MITRE ATT&CK: T1136.001 — Create Account: Local Account
 ```
 
-The important part is whether the model avoids unsupported assumptions.
+The manual assessment reached the same classification and risk level.
 
-A good triage output should not claim:
+The evidence confirmed that a new account had been created but did not establish whether the action was authorized or malicious.
 
-- confirmed compromise
-- malware execution
-- lateral movement
-- credential theft
-- exfiltration
+Additional context would be required, such as:
 
-unless those facts are present in the evidence.
+- whether the account creation was approved;
+- whether the account was added to a privileged group;
+- whether the account was later used to log in;
+- whether related suspicious activity occurred on the endpoint.
 
-## Manual Analyst Validation
+## Alert 02 — Suspicious PowerShell
 
-Each AI output is manually reviewed using the same evidence.
+The scenario contains a PowerShell execution using:
 
-The manual review checks:
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Test-NetConnection 192.168.20.45 -Port 9997"
+```
 
-- Was the classification supported?
-- Was the MITRE mapping appropriate?
-- Did the model overclassify the alert?
-- Did the model invent attacker intent or impact?
-- Did it ask useful triage questions?
-- Did it identify missing context?
-
-Example manual assessment:
+Both assessments classified the event as:
 
 ```text
-Alert 05: New local user created
-
-Manual classification: needs_review
-Risk level: medium
-
-Reasoning:
-A new local user account can indicate persistence, but the alert does not prove compromise by itself. There is no evidence that the account was added to the local Administrators group, used for lateral movement, or tied to malware execution. Additional context is required.
+Classification: needs_review
 ```
 
-## Human vs AI Comparison
+The LLM assigned a `low` risk level, while the manual assessment assigned `medium`.
 
-The project compares AI classifications against manual analyst validation.
+The difference came from how much weight was given to the combination of `ExecutionPolicy Bypass` and network connectivity activity.
 
-| Alert                          | AI Classification | Manual Classification   | Result            |
-| ------------------------------ | ----------------- | ----------------------- | ----------------- |
-| Suspicious PowerShell          | Needs review      | Needs review            | Correct           |
-| Benign admin PowerShell        | Suspicious        | Benign / Needs review   | Partially correct |
-| Failed login burst             | Suspicious        | Suspicious              | Correct           |
-| SQL injection-style request    | Suspicious        | Suspicious              | Correct           |
-| New local user created         | Suspicious        | Needs review            | Partially correct |
-| Suspicious outbound connection | Needs review      | Needs review            | Correct           |
-| Encoded PowerShell             | Suspicious        | Suspicious              | Correct           |
-| Noisy false positive           | Suspicious        | Benign / False positive | Incorrect         |
+The command was not treated as evidence of compromise on its own.
+
+## Alert 03 — Noisy False Positive
+
+The third scenario uses:
+
+```cmd
+cmd.exe /c whoami
+```
+
+The command was part of a documented test used to confirm command-execution visibility in Splunk.
+
+Both the LLM and the manual assessment classified the event as:
+
+```text
+Classification: benign
+Risk level: low
+```
+
+The LLM did not treat the use of `cmd.exe` or `whoami` alone as evidence of malicious activity.
+
+## AI vs. Manual Comparison
+
+| Alert                         | AI Classification | AI Risk | Manual Classification | Manual Risk | Comparison        |
+| ----------------------------- | ----------------- | ------- | --------------------- | ----------- | ----------------- |
+| **Alert 01 — New local user** | Needs review      | Medium  | Needs review          | Medium      | Aligned           |
+| **Alert 02 — PowerShell**     | Needs review      | Low     | Needs review          | Medium      | Partially aligned |
+| **Alert 03 — False positive** | Benign            | Low     | Benign                | Low         | Aligned           |
+
+The main difference appeared in Alert 02, where the classification was the same but the assigned risk level differed.
 
 ## Key Findings
 
-The LLM was useful for:
+Across the three scenarios, the LLM was useful for:
 
-- summarizing noisy alert data
-- extracting key observables
-- suggesting triage questions
-- producing consistent first-pass notes
-- suggesting possible MITRE ATT&CK mappings
+- summarizing evidence;
+- extracting relevant observables;
+- identifying missing context;
+- generating useful triage questions;
+- suggesting MITRE ATT&CK mappings;
+- producing consistent structured assessments.
 
-The LLM was risky when:
+The main limitation was its dependence on the context included in the alert.
 
-- evidence was weak or ambiguous
-- suspicious behavior also had a legitimate explanation
-- environmental context was missing
-- MITRE mappings were plausible but not fully supported
+Information such as authorization, process relationships, execution results, related events, and expected endpoint behavior can significantly affect the final assessment.
 
 ## Skills Demonstrated
 
-This project demonstrates:
+This project demonstrates hands-on work with:
 
-- SOC triage methodology
-- Splunk search and investigation
-- Windows telemetry analysis
-- Sysmon and Windows Event Log interpretation
-- Python scripting
-- OpenAI API integration
-- MITRE ATT&CK mapping
-- alert classification
-- false-positive reasoning
-- human validation of AI-generated security analysis
+- Splunk searches and event investigation;
+- Windows Security Event Logs;
+- Sysmon process telemetry;
+- structured alert analysis;
+- Python scripting;
+- OpenAI API integration;
+- MITRE ATT&CK mapping;
+- alert classification;
+- false-positive reasoning;
+- comparison of LLM output with manual assessment.
 
 ## Main Lesson
 
-AI can help with first-pass SOC triage, but it should not be treated as the final decision-maker.
+The LLM was most useful as a tool for structuring the initial review rather than making autonomous security decisions.
 
-The safest role for an LLM in this workflow is:
+Its conclusions were most reliable when they remained limited to the evidence provided.
 
-> Assist the analyst, but do not replace analyst judgment.
+> **Use AI to structure the analysis, not to replace evidence-based judgment.**
+````

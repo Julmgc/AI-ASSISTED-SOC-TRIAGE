@@ -1,5 +1,5 @@
 {
-  "alert_id": "alert_08",
+  "alert_id": "alert_03",
   "source": "Windows Sysmon telemetry collected in Splunk",
   "timestamp": "2026-07-13T15:35:00-03:00",
   "host": {
